@@ -97,3 +97,16 @@ def main(): # O como hagamos el main, python y sus cosas, de normal se hace lo d
 ```
 
 Esto es de forma general como se entrena una red neuronal, pero faltan algunas cosillas, en el ejemplo completo que te enviare puedes revisar de forma mas completa. :)
+
+
+## Uso para nuestro caso
+
+Primero crear el entorno virtual e instalar los paquetes:
+
+```sh
+python -m venv hpcai
+source hpcai/bin/activate
+pip install --upgrade pip # Creo que no es necesario esto del todo, pero siempre lo hago porseaca
+pip install -U transformers datasets accelerate evaluate torch torchvision
+pip install huggingface_hub
+```
