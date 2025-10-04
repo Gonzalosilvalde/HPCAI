@@ -1,3 +1,6 @@
+# Links del lab
+https://awesome-archduke-bec.notion.site/Lab-AI-HPC-Tools-e647da3f04dc4e66a40692da0d5f9c27
+
 # GUIA BASICA PARA UNA IA en python
 
 ## La Red
