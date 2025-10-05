@@ -16,7 +16,7 @@ import profiling
 
 
 class SQuADTrainer:
-    def __init__(self, model_name="bert-base-uncased", max_length=384, batch_size=8, num_epochs=3):
+    def __init__(self, model_name="bert-base-uncased", max_length=384, batch_size=4, num_epochs=1):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if torch.cuda.is_available():
             print(f"GPU: {torch.cuda.get_device_name(0)}")
