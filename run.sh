@@ -10,9 +10,10 @@
 
 ##SBATCH --partition=gpu
 
+source ./.env
 module load cesga/2025
 
-cd $STORE/HPC_TOOLS/HPCAI # Yo lo tengo organizado asi en el FT3
+cd $PROJECT_ROUTE
 source ./venv/bin/activate
 
 echo "Starting job..."
