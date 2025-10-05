@@ -245,7 +245,7 @@ def main():
     trainer = SQuADTrainer(**config)
     
 
-    profiling.start_profiling(trainer.train, "./profile")   
+    profiling.start_profiling(lambda: trainer.train(), "./profile")
     
     trainer.save_model()
     
