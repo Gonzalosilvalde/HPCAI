@@ -12,6 +12,9 @@ from tqdm.auto import tqdm
 import json
 import os
 
+import profiling
+
+
 class SQuADTrainer:
     def __init__(self, model_name="bert-base-uncased", max_length=384, batch_size=8, num_epochs=3):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -241,7 +244,8 @@ def main():
     
     trainer = SQuADTrainer(**config)
     
-    trainer.train()
+
+    profiling.start_profiling(trainer.train, "./profile")   
     
     trainer.save_model()
     
