@@ -6,6 +6,8 @@ rm -rf venv
 
 python -m venv venv
 
+cd $STORE/HPC_TOOLS/HPCAI
+
 source ./venv/bin/activate
 
 # Los he sacado del ejemplo del CFR24
