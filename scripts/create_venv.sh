@@ -1,12 +1,13 @@
 #!/bin/bash
+source ./.env
+
+cd $PROJECT_ROUTE
 
 module load cesga/2025
 
 rm -rf venv
 
 python -m venv venv
-
-cd $STORE/HPC_TOOLS/HPCAI
 
 source ./venv/bin/activate
 
