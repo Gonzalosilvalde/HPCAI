@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
 from transformers import (
-    BertForQuestionAnswering,
+    BertModel,
     BertTokenizerFast,
     get_linear_schedule_with_warmup
 )
@@ -14,9 +14,8 @@ import os
 
 import profiling
 
-
 class SQuADTrainer:
-    def __init__(self, model_name="bert-base-uncased", max_length=384, batch_size=4, num_epochs=1):
+    def __init__(self, model_name="bert-base-uncased", max_length=384, batch_size=4, num_epochs=3):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         if torch.cuda.is_available():
             print(f"GPU: {torch.cuda.get_device_name(0)}")
@@ -24,7 +23,7 @@ class SQuADTrainer:
         
         # Iniciar modelo y tokenizer 
         self.tokenizer = BertTokenizerFast.from_pretrained(model_name)
-        self.model = BertForQuestionAnswering.from_pretrained(model_name)
+        self.model = BertModel.from_pretrained(model_name)
         self.model.to(self.device)
         
         # Parametros
