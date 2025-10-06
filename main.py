@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
 from transformers import (
-    BertModel,
+    BertForQuestionAnswering,  # Changed from BertModel
     BertTokenizer,
     get_linear_schedule_with_warmup
 )
@@ -23,7 +23,7 @@ class SQuADTrainer:
         
         # Iniciar modelo y tokenizer 
         self.tokenizer = BertTokenizer.from_pretrained(model_name)
-        self.model = BertModel.from_pretrained(model_name)
+        self.model = BertForQuestionAnswering.from_pretrained(model_name)  # Changed
         self.model.to(self.device)
         
         # Parametros
