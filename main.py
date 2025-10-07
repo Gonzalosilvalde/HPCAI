@@ -12,7 +12,7 @@ from tqdm.auto import tqdm
 import json
 import os
 
-import profiling
+from torch.profiler import profile, record_function, ProfilerActivity
 
 class SQuADTrainer:
     def __init__(self, model_name="bert-base-uncased", max_length=384, batch_size=4, num_epochs=3):
@@ -243,9 +243,16 @@ def main():
     
     trainer = SQuADTrainer(**config)
     
+    with profile(
+        activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],  # CPU y GPU
+        record_shapes=True,                                        # Guarda shapes de tensores
+        with_stack=True,                                           # Guarda stack trace
+        on_trace_ready=torch.profiler.tensorboard_trace_handler("./profile")  # Salida a TensorBoard
+    ) as prof:
+        with record_function("model_training"):
+            trainer.train()
 
-    profiling.start_profiling(lambda: trainer.train(), "./profile")
-    
+
     trainer.save_model()
     
 if __name__ == "__main__":
