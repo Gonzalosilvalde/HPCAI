@@ -12,6 +12,8 @@ from tqdm.auto import tqdm
 import json
 import os
 from torch.utils.tensorboard import SummaryWriter
+from torch.profiler import profile, record_function, ProfilerActivity
+
 
 writer = SummaryWriter()
 
@@ -146,75 +148,85 @@ class SQuADTrainer:
         
         self.model.train()
         overall_start = time.time()
-        
-        for epoch in range(self.num_epochs):
-            epoch_start_time = time.time()
-            epoch_loss = 0
-            epoch_losses = []
-            
-            progress_bar = tqdm(train_dataloader, desc=f"Epoch {epoch + 1}/{self.num_epochs}")
-            
-            for step, batch in enumerate(progress_bar):
-                step_start_time = time.time()
-                
-                batch = {k: v.to(self.device) for k, v in batch.items()}
-                
-                outputs = self.model(**batch)
-                loss = outputs.loss
-                
-                loss.backward()
-                optimizer.step()
-                lr_scheduler.step()
-                optimizer.zero_grad()
-                
-                step_time = time.time() - step_start_time
-                loss_value = loss.item()
-                epoch_loss += loss_value
-                epoch_losses.append(loss_value)
-                all_losses.append(loss_value)
-                learning_rate = lr_scheduler.get_last_lr()[0]
-                
-                progress_bar.set_postfix({
-                    'loss': f'{loss_value:.4f}',
-                    'avg_loss': f'{epoch_loss/(step+1):.4f}',
-                    'lr': f'{learning_rate:.2e}',
-                    'step_time': f'{step_time:.2f}s'
-                })
-
-                # Métricas
-                writer.add_scalar("Loss/train", epoch_loss, epoch)
-                writer.add_scalar("Step time", step_time, epoch)
-                writer.add_scalar("Learning rate",learning_rate, epoch)
-
-                writer.add_scalar("Loss/train (step)", epoch_loss, step)
-                writer.add_scalar("Step time (step)", step_time, step)
-                writer.add_scalar("Learning rate (step)",learning_rate, step)
-
-                global_step += 1
-            
-            epoch_time = time.time() - epoch_start_time
-            total_train_time += epoch_time
-            avg_epoch_loss = epoch_loss / len(train_dataloader)
-            
-            self.training_history['epochs'].append(epoch + 1)
-            self.training_history['loss_per_epoch'].append(avg_epoch_loss)
-            self.training_history['time_per_epoch'].append(epoch_time)
-            
-            print(f"Average Loss: {avg_epoch_loss:.4f}")
     
-        total_train_time = time.time() - overall_start
+        with torch.profiler.profile(
+            activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+            schedule=torch.profiler.schedule(wait=1, warmup=1, active=2, repeat=1),
+            on_trace_ready=torch.profiler.tensorboard_trace_handler("./profile"),
+            record_shapes=True,
+            profile_memory=True,
+            with_stack=True
+        ) as prof: 
+            for epoch in range(self.num_epochs):
+                epoch_start_time = time.time()
+                epoch_loss = 0
+                epoch_losses = []
+                
+                progress_bar = tqdm(train_dataloader, desc=f"Epoch {epoch + 1}/{self.num_epochs}")
+                
+                for step, batch in enumerate(progress_bar):
+                    step_start_time = time.time()
+                    
+                    batch = {k: v.to(self.device) for k, v in batch.items()}
+                    
+                    outputs = self.model(**batch)
+                    loss = outputs.loss
+                    
+                    loss.backward()
+                    optimizer.step()
+                    lr_scheduler.step()
+                    optimizer.zero_grad()
+                    
+                    step_time = time.time() - step_start_time
+                    loss_value = loss.item()
+                    epoch_loss += loss_value
+                    epoch_losses.append(loss_value)
+                    all_losses.append(loss_value)
+                    learning_rate = lr_scheduler.get_last_lr()[0]
+                    
+                    progress_bar.set_postfix({
+                        'loss': f'{loss_value:.4f}',
+                        'avg_loss': f'{epoch_loss/(step+1):.4f}',
+                        'lr': f'{learning_rate:.2e}',
+                        'step_time': f'{step_time:.2f}s'
+                    })
 
-        
-        self.save_training_metrics(total_train_time, global_step)
-        
-        writer.flush()
+                    # Métricas
+                    writer.add_scalar("Loss/train", epoch_loss, epoch)
+                    writer.add_scalar("Step time", step_time, epoch)
+                    writer.add_scalar("Learning rate",learning_rate, epoch)
 
-        return self.model, {
-            'total_time': total_train_time,
-            'epochs': self.num_epochs,
-            'final_loss': avg_epoch_loss,
-            'history': self.training_history
-        }
+                    writer.add_scalar("Loss/train (step)", epoch_loss, step)
+                    writer.add_scalar("Step time (step)", step_time, step)
+                    writer.add_scalar("Learning rate (step)",learning_rate, step)
+
+                    global_step += 1
+                
+                epoch_time = time.time() - epoch_start_time
+                total_train_time += epoch_time
+                avg_epoch_loss = epoch_loss / len(train_dataloader)
+                
+                self.training_history['epochs'].append(epoch + 1)
+                self.training_history['loss_per_epoch'].append(avg_epoch_loss)
+                self.training_history['time_per_epoch'].append(epoch_time)
+                
+                print(f"Average Loss: {avg_epoch_loss:.4f}")
+              
+                prof.step()
+        
+            total_train_time = time.time() - overall_start
+
+            
+            self.save_training_metrics(total_train_time, global_step)
+            
+            writer.flush()
+
+            return self.model, {
+                'total_time': total_train_time,
+                'epochs': self.num_epochs,
+                'final_loss': avg_epoch_loss,
+                'history': self.training_history
+            }
     
     def save_training_metrics(self, total_time, total_steps):
         metrics = {
@@ -257,6 +269,7 @@ def main():
     }
     
     trainer = SQuADTrainer(**config)
+    
     trainer.train()
     trainer.save_model()
     
