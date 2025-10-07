@@ -2,10 +2,10 @@
 #SBATCH --job-name=bert_test
 #SBATCH --output=bert_test.out
 #SBATCH --error=bert_test.err
-#SBATCH --time=00:15:00
+#SBATCH --time=00:25:00
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=32
-#SBATCH --mem=16G
+#SBATCH --mem=32G
 #SBATCH --ntasks=1
 
 ##SBATCH --partition=gpu
