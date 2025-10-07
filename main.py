@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from torch.optim import AdamW
 from transformers import (
     BertForQuestionAnswering,  # Changed from BertModel
-    BertTokenizer,
+    BertTokenizerFast,
     get_linear_schedule_with_warmup
 )
 from datasets import load_dataset
@@ -22,7 +22,7 @@ class SQuADTrainer:
             print(f"GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.2f} GB")
         
         # Iniciar modelo y tokenizer 
-        self.tokenizer = BertTokenizer.from_pretrained(model_name)
+        self.tokenizer = BertTokenizerFast.from_pretrained(model_name)
         self.model = BertForQuestionAnswering.from_pretrained(model_name)  # Changed
         self.model.to(self.device)
         
