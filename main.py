@@ -251,6 +251,7 @@ def main():
     ) as prof:
         with record_function("model_training"):
             trainer.train()
+            prof.step()
 
 
     trainer.save_model()
