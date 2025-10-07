@@ -152,7 +152,7 @@ class SQuADTrainer:
         with torch.profiler.profile(
             activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
             schedule=torch.profiler.schedule(wait=1, warmup=1, active=2, repeat=1),
-            on_trace_ready=torch.profiler.tensorboard_trace_handler("./profile"),
+            on_trace_ready=torch.profiler.tensorboard_trace_handler("./runs"),
             record_shapes=True,
             profile_memory=True,
             with_stack=True
