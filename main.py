@@ -11,6 +11,9 @@ import time
 from tqdm.auto import tqdm
 import json
 import os
+from torch.utils.tensorboard import SummaryWriter
+
+writer = SummaryWriter()
 
 from torch.profiler import profile, record_function, ProfilerActivity
 
@@ -188,12 +191,16 @@ class SQuADTrainer:
             self.training_history['time_per_epoch'].append(epoch_time)
             
             print(f"Average Loss: {avg_epoch_loss:.4f}")
-        
+    
+            writer.add_scalar("Loss/train", epoch_loss, epoch)
+
         total_train_time = time.time() - overall_start
-        
+
         
         self.save_training_metrics(total_train_time, global_step)
         
+        writer.flush()
+
         return self.model, {
             'total_time': total_train_time,
             'epochs': self.num_epochs,
@@ -242,18 +249,7 @@ def main():
     }
     
     trainer = SQuADTrainer(**config)
-    
-    with profile(
-        activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],  # CPU y GPU
-        record_shapes=True,                                        # Guarda shapes de tensores
-        with_stack=True,                                           # Guarda stack trace
-        on_trace_ready=torch.profiler.tensorboard_trace_handler("./profile")  # Salida a TensorBoard
-    ) as prof:
-        with record_function("model_training"):
-            trainer.train()
-            prof.step()
-
-
+    trainer.train()
     trainer.save_model()
     
 if __name__ == "__main__":
