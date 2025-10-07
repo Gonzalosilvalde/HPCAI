@@ -1,0 +1,16 @@
+tensorboard-plugin-profile
+nvidia-pyindex
+nvidia-cuda-cupti
+matplotlib
+portpicker
+tensorflow-datasets
+torch 
+torchvision 
+torchaudio
+transformers 
+datasets 
+tqdm 
+tensorboard
+portpicker
+
+
