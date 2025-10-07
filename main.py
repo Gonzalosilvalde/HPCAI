@@ -172,14 +172,24 @@ class SQuADTrainer:
                 epoch_loss += loss_value
                 epoch_losses.append(loss_value)
                 all_losses.append(loss_value)
+                learning_rate = lr_scheduler.get_last_lr()[0]
                 
                 progress_bar.set_postfix({
                     'loss': f'{loss_value:.4f}',
                     'avg_loss': f'{epoch_loss/(step+1):.4f}',
-                    'lr': f'{lr_scheduler.get_last_lr()[0]:.2e}',
+                    'lr': f'{learning_rate:.2e}',
                     'step_time': f'{step_time:.2f}s'
                 })
-                
+
+                # Métricas
+                writer.add_scalar("Loss/train", epoch_loss, epoch)
+                writer.add_scalar("Step time", step_time, epoch)
+                writer.add_scalar("Learning rate",learning_rate, epoch)
+
+                writer.add_scalar("Loss/train (step)", epoch_loss, step)
+                writer.add_scalar("Step time (step)", step_time, step)
+                writer.add_scalar("Learning rate (step)",learning_rate, step)
+
                 global_step += 1
             
             epoch_time = time.time() - epoch_start_time
@@ -192,8 +202,6 @@ class SQuADTrainer:
             
             print(f"Average Loss: {avg_epoch_loss:.4f}")
     
-            writer.add_scalar("Loss/train", epoch_loss, epoch)
-
         total_train_time = time.time() - overall_start
 
         
