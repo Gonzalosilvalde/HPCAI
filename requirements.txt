@@ -1,5 +1,4 @@
 tensorboard-plugin-profile
-nvidia-pyindex
 nvidia-cuda-cupti
 matplotlib
 portpicker

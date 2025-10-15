@@ -1,1 +1,4 @@
 venv
+.env
+bert_squad_model
+runs
