@@ -1,24 +1,22 @@
 import torch
+import time
+
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
+from torch.utils.tensorboard import SummaryWriter
+from torch.profiler import ProfilerActivity
+
 from transformers import (
     BertForQuestionAnswering,
     BertTokenizerFast,
     get_linear_schedule_with_warmup,
 )
-from datasets import load_dataset
-import time
-from tqdm.auto import tqdm
-import json
-import os
-from torch.utils.tensorboard import SummaryWriter
-from torch.profiler import profile, record_function, ProfilerActivity
 
+from datasets import load_dataset
+
+from tqdm.auto import tqdm
 
 writer = SummaryWriter()
-
-from torch.profiler import profile, record_function, ProfilerActivity
-
 
 class SQuADTrainer:
     def __init__(
@@ -33,7 +31,7 @@ class SQuADTrainer:
 
         # Iniciar modelo y tokenizer
         self.tokenizer = BertTokenizerFast.from_pretrained(model_name)
-        self.model = BertForQuestionAnswering.from_pretrained(model_name)  # Changed
+        self.model = BertForQuestionAnswering.from_pretrained(model_name)
         self.model.to(self.device)
 
         # Parametros
@@ -228,26 +226,18 @@ class SQuADTrainer:
                 "history": self.training_history,
             }
 
-    def save_model(self, output_dir="./bert_squad_model"):
-        os.makedirs(output_dir, exist_ok=True)
-        self.model.save_pretrained(output_dir)
-        self.tokenizer.save_pretrained(output_dir)
-        print(f"Model saved to {output_dir}")
-
 
 def main():
     config = {
         "model_name": "bert-base-uncased",
         "max_length": 384,
         "batch_size": 8,  # Decrease for less GPU memory, increase for faster training
-        "num_epochs": 1,  # Increase for longer training time
+        "num_epochs": 1,
     }
 
     trainer = SQuADTrainer(**config)
 
     trainer.train()
-    trainer.save_model()
-
 
 if __name__ == "__main__":
     main()
