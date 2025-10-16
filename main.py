@@ -194,15 +194,6 @@ class SQuADTrainer:
                     all_losses.append(loss_value)
                     learning_rate = lr_scheduler.get_last_lr()[0]
 
-                    progress_bar.set_postfix(
-                        {
-                            "loss": f"{loss_value:.4f}",
-                            "avg_loss": f"{epoch_loss/(step+1):.4f}",
-                            "lr": f"{learning_rate:.2e}",
-                            "step_time": f"{step_time:.2f}s",
-                        }
-                    )
-
                     # Métricas
                     writer.add_scalar("Loss/train", loss_value, epoch)
                     writer.add_scalar("Step time", step_time, epoch)
