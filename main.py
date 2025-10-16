@@ -168,11 +168,7 @@ class SQuADTrainer:
                 epoch_loss = 0
                 epoch_losses = []
 
-                progress_bar = tqdm(
-                    train_dataloader, desc=f"Epoch {epoch + 1}/{self.num_epochs}"
-                )
-
-                for step, batch in enumerate(progress_bar):
+                for step, batch in enumerate(train_dataloader):
                     step_start_time = time.time()
 
                     batch = {k: v.to(self.device) for k, v in batch.items()}
