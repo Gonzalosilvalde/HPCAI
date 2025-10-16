@@ -146,9 +146,9 @@ class SQuADTrainer:
         print(f"Total training steps: {num_training_steps}")
         print(f"Max sequence length: {self.max_length}")
         print(f"Learning rate: 3e-5")
-        print(f"{'='*70}\n")
+        print(f"{'='*70}\n", flush=True)
 
-        global_step = 0
+        global_step = 0 
         total_train_time = 0
         all_losses = []
 
