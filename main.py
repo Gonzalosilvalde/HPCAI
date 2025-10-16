@@ -228,7 +228,7 @@ def main():
         "model_name": "bert-base-uncased",
         "max_length": 384,
         "batch_size": 8,  # Decrease for less GPU memory, increase for faster training
-        "num_epochs": 1,
+        "num_epochs": 10,
     }
 
     trainer = SQuADTrainer(**config)
