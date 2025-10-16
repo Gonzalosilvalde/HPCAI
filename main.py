@@ -218,7 +218,6 @@ class SQuADTrainer:
 
             total_train_time = time.time() - overall_start
 
-            self.save_training_metrics(total_train_time, global_step)
 
             writer.flush()
 
@@ -228,32 +227,6 @@ class SQuADTrainer:
                 "final_loss": avg_epoch_loss,
                 "history": self.training_history,
             }
-
-    def save_training_metrics(self, total_time, total_steps):
-        metrics = {
-            "model": "bert-base-uncased",
-            "dataset": "SQuAD",
-            "configuration": {
-                "batch_size": self.batch_size,
-                "num_epochs": self.num_epochs,
-                "max_length": self.max_length,
-                "learning_rate": 3e-5,
-            },
-            "results": {
-                "total_training_time_seconds": total_time,
-                "total_training_time_minutes": total_time / 60,
-                "average_time_per_epoch_seconds": total_time / self.num_epochs,
-                "total_steps": total_steps,
-                "average_time_per_step_seconds": total_time / total_steps,
-            },
-            "history": self.training_history,
-        }
-
-        os.makedirs("training_results", exist_ok=True)
-        with open("training_results/training_metrics.json", "w") as f:
-            json.dump(metrics, f, indent=2)
-
-        print(f"Training metrics saved to: training_results/training_metrics.json\n")
 
     def save_model(self, output_dir="./bert_squad_model"):
         os.makedirs(output_dir, exist_ok=True)
