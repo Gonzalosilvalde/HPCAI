@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
 from transformers import (
-    BertForQuestionAnswering,  # Changed from BertModel
+    BertForQuestionAnswering,
     BertTokenizerFast,
     get_linear_schedule_with_warmup,
 )
