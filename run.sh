@@ -16,7 +16,8 @@ module load cesga/2025
 cd $PROJECT_ROUTE
 source ./venv/bin/activate
 
-mkdir runs profile
+mkdir runs 
+mkdir runs/profile
 
 echo "Starting job..."
 python main.py
