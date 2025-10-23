@@ -1,5 +1,6 @@
 import torch
 import time
+import os
 
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
@@ -221,6 +222,12 @@ class SQuADTrainer:
                 "final_loss": avg_epoch_loss,
                 "history": self.training_history,
             }
+
+    def save_model(self, output_dir="./bert_squad_model"):
+        os.makedirs(output_dir, exist_ok=True)
+        self.model.save_pretrained(output_dir)
+        self.tokenizer.save_pretrained(output_dir)
+        print(f"Model saved to {output_dir}")
 
 
 def main():
