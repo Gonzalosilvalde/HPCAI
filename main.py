@@ -18,6 +18,7 @@ from tqdm.auto import tqdm
 
 writer = SummaryWriter()
 
+
 class SQuADTrainer:
     def __init__(
         self, model_name="bert-base-uncased", max_length=384, batch_size=4, num_epochs=3
@@ -148,7 +149,7 @@ class SQuADTrainer:
         print(f"Learning rate: 3e-5")
         print(f"{'='*70}\n", flush=True)
 
-        global_step = 0 
+        global_step = 0
         total_train_time = 0
         all_losses = []
 
@@ -212,7 +213,6 @@ class SQuADTrainer:
 
             total_train_time = time.time() - overall_start
 
-
             writer.flush()
 
             return self.model, {
@@ -234,6 +234,8 @@ def main():
     trainer = SQuADTrainer(**config)
 
     trainer.train()
+    trainer.save_model()
+
 
 if __name__ == "__main__":
     main()
