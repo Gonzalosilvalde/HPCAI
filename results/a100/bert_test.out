@@ -1,0 +1,32 @@
+slurmstepd: info: Setting TMPDIR to /scratch/1806410. Previous errors about TMPDIR can be discarded
+Starting job...
+GPU: NVIDIA A100-PCIE-40GB
+GPU Memory: 42.41 GB
+
+Loading SQuAD dataset...
+Preprocessing 10000 examples...
+
+======================================================================
+TRAINING CONFIGURATION
+======================================================================
+Model: BERT-Base-uncased
+Dataset: SQuAD
+Number of examples: 10138
+Batch size: 8
+Number of epochs: 10
+Total training steps: 12680
+Max sequence length: 384
+Learning rate: 3e-5
+======================================================================
+
+Average Loss: 1.6891
+Average Loss: 0.7699
+Average Loss: 0.4168
+Average Loss: 0.2385
+Average Loss: 0.1577
+Average Loss: 0.1080
+Average Loss: 0.0743
+Average Loss: 0.0558
+Average Loss: 0.0347
+Average Loss: 0.0247
+Model saved to ./bert_squad_model
