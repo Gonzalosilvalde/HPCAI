@@ -25,10 +25,15 @@ CONFIG = {
     "num_epochs": 10,
 }
 
+
+activities = [ProfilerActivity.CPU]
+if torch.cuda.is_available():
+    activities.append(ProfilerActivity.CUDA)
+
 TRAINING_PROFILING_RUNS = {
     "With profiler": {
         "profiler": torch.profiler.profile(
-            activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+            activities=activities,
             schedule=torch.profiler.schedule(wait=2, warmup=100, active=10, repeat=1),
             on_trace_ready=torch.profiler.tensorboard_trace_handler("./runs/profile/"),
             record_shapes=True,
