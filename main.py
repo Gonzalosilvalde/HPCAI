@@ -26,16 +26,10 @@ CONFIG = {
 }
 
 TRAINING_PROFILING_RUNS = {
-    "No profiler": {
-        "profiler": None,
-        "save_profiler_time_table": False,
-        "save_tensorboard_metrics": True,
-        "save_model": True,
-    },
-    "Perfetto profiler": {
+    "With profiler": {
         "profiler": torch.profiler.profile(
             activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
-            schedule=torch.profiler.schedule(wait=2, warmup=2, active=8, repeat=1),
+            schedule=torch.profiler.schedule(wait=2, warmup=2, active=10, repeat=1),
             on_trace_ready=torch.profiler.tensorboard_trace_handler("./runs/profile/"),
             record_shapes=True,
             profile_memory=True,
@@ -45,16 +39,11 @@ TRAINING_PROFILING_RUNS = {
         "save_tensorboard_metrics": False,
         "save_model": False,
     },
-    "Time table profiler": {
-        "profiler": torch.profiler.profile(
-            activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
-            record_shapes=True,
-            profile_memory=True,
-            with_stack=False,
-        ),
-        "save_profiler_time_table": True,
-        "save_tensorboard_metrics": False,
-        "save_model": False,
+    "No profiler": {
+        "profiler": None,
+        "save_profiler_time_table": False,
+        "save_tensorboard_metrics": True,
+        "save_model": True,
     },
 }
 
@@ -265,6 +254,7 @@ class SQuADTrainer:
                 writer.flush()
 
             if save_profiler_time_table and profiler != None:
+                os.makedirs("./runs/profile", exist_ok=True)
                 with open("runs/profile/profiler_summary.txt", "w") as f:
                     f.write(
                         prof.key_averages().table(
@@ -273,7 +263,7 @@ class SQuADTrainer:
                                 if torch.cuda.is_available()
                                 else "cpu_time_total"
                             ),
-                            row_limit=1000,
+                            row_limit=40,
                         )
                     )
 
