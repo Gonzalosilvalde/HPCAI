@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 import torch
 import time
 import os
@@ -16,6 +17,47 @@ from transformers import (
 from datasets import load_dataset
 
 from tqdm.auto import tqdm
+
+CONFIG = {
+    "model_name": "bert-base-uncased",
+    "max_length": 384,
+    "batch_size": 8,
+    "num_epochs": 1,
+}
+
+TRAINING_PROFILING_RUNS = {
+    "No profiler": {
+        "profiler": None,
+        "save_profiler_time_table": False,
+        "save_tensorboard_metrics": True,
+        "save_model": True,
+    },
+    "Perfetto profiler": {
+        "profiler": torch.profiler.profile(
+            activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+            schedule=torch.profiler.schedule(wait=2, warmup=2, active=8, repeat=1),
+            on_trace_ready=torch.profiler.tensorboard_trace_handler("./runs/profile/"),
+            record_shapes=True,
+            profile_memory=True,
+            with_stack=True,
+        ),
+        "save_profiler_time_table": False,
+        "save_tensorboard_metrics": False,
+        "save_model": False,
+    },
+    "Time table profiler": {
+        "profiler": torch.profiler.profile(
+            activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+            record_shapes=True,
+            profile_memory=True,
+            with_stack=False,
+        ),
+        "save_profiler_time_table": True,
+        "save_tensorboard_metrics": False,
+        "save_model": False,
+    },
+}
+
 
 writer = SummaryWriter()
 
@@ -121,7 +163,12 @@ class SQuADTrainer:
         tokenized_dataset.set_format("torch")
         return tokenized_dataset
 
-    def train(self):
+    def train(
+        self,
+        profiler=None,
+        save_profiler_time_table: bool = False,
+        save_tensorboard_metrics: bool = False,
+    ):
         train_dataset = self.prepare_data()
         train_dataloader = DataLoader(
             train_dataset,
@@ -154,23 +201,22 @@ class SQuADTrainer:
         total_train_time = 0
         all_losses = []
 
+        start_time = time.time()
         self.model.train()
-        overall_start = time.time()
 
-        with torch.profiler.profile(
-            activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
-            schedule=torch.profiler.schedule(wait=2, warmup=2, active=8, repeat=1),
-            on_trace_ready=torch.profiler.tensorboard_trace_handler("./runs/profile/"),
-            record_shapes=True,
-            profile_memory=True,
-            with_stack=True,
-        ) as prof:
+        with profiler if profiler is not None else nullcontext() as prof:
             for epoch in range(self.num_epochs):
                 epoch_start_time = time.time()
                 epoch_loss = 0
                 epoch_losses = []
 
                 for step, batch in enumerate(train_dataloader):
+                    print(
+                        f"Epoch[{epoch}/ {self.num_epochs}]({step}/{num_training_steps // self.num_epochs})",
+                        end="\r",
+                        flush=True,
+                    )
+
                     step_start_time = time.time()
 
                     batch = {k: v.to(self.device) for k, v in batch.items()}
@@ -191,30 +237,48 @@ class SQuADTrainer:
                     learning_rate = lr_scheduler.get_last_lr()[0]
 
                     # Métricas
-                    writer.add_scalar("Loss/train", loss_value, epoch)
-                    writer.add_scalar("Step time", step_time, epoch)
-                    writer.add_scalar("Learning rate", learning_rate, epoch)
+                    if save_tensorboard_metrics:
+                        writer.add_scalar("Loss", loss_value, global_step)
+                        writer.add_scalar("Step time", step_time, global_step)
+                        writer.add_scalar("Learning rate", learning_rate, global_step)
 
-                    writer.add_scalar("Loss/train_step", loss_value, global_step)
-                    writer.add_scalar("Step time", step_time, global_step)
-                    writer.add_scalar("Learning rate", learning_rate, global_step)
+                    if profiler != None:
+                        prof.step()
 
-                    prof.step()
                     global_step += 1
 
                 epoch_time = time.time() - epoch_start_time
-                total_train_time += epoch_time
                 avg_epoch_loss = epoch_loss / len(train_dataloader)
 
                 self.training_history["epochs"].append(epoch + 1)
                 self.training_history["loss_per_epoch"].append(avg_epoch_loss)
                 self.training_history["time_per_epoch"].append(epoch_time)
 
-                print(f"Average Loss: {avg_epoch_loss:.4f}")
+            total_train_time = time.time() - start_time
 
-            total_train_time = time.time() - overall_start
+            if save_tensorboard_metrics:
+                metrics = {
+                    "total_time_s": total_train_time,
+                    "final_loss": avg_epoch_loss,
+                    "batch_size": self.batch_size,
+                    "num_epochs": self.num_epochs,
+                }
 
-            writer.flush()
+                writer.add_text("Summary", metrics)
+                writer.flush()
+
+            if save_profiler_time_table and profiler != None:
+                with open("runs/profile/profiler_summary.txt", "w") as f:
+                    f.write(
+                        prof.key_averages().table(
+                            sort_by=(
+                                "cuda_time_total"
+                                if torch.cuda.is_available()
+                                else "cpu_time_total"
+                            ),
+                            row_limit=1000,
+                        )
+                    )
 
             return self.model, {
                 "total_time": total_train_time,
@@ -231,17 +295,21 @@ class SQuADTrainer:
 
 
 def main():
-    config = {
-        "model_name": "bert-base-uncased",
-        "max_length": 384,
-        "batch_size": 8,  # Decrease for less GPU memory, increase for faster training
-        "num_epochs": 10,
-    }
 
-    trainer = SQuADTrainer(**config)
+    for iteration_name, iter_config in TRAINING_PROFILING_RUNS.items():
+        print(f"\n\nRUNNING ITERATION: {iteration_name}\n\n")
+        trainer = SQuADTrainer(**CONFIG)
 
-    trainer.train()
-    trainer.save_model()
+        trainer.train(
+            profiler=iter_config["profiler"],
+            save_tensorboard_metrics=iter_config["save_tensorboard_metrics"],
+            save_profiler_time_table=iter_config["save_profiler_time_table"],
+        )
+
+        if iter_config["save_model"]:
+            trainer.save_model(
+                output_dir=f"./bert_squad_model_{iteration_name.replace(' ', '_')}"
+            )
 
 
 if __name__ == "__main__":
