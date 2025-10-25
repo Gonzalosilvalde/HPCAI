@@ -1,12 +1,13 @@
 #!/bin/bash
 #SBATCH --job-name=bert_test
-#SBATCH --output=bert_test_a100.out
-#SBATCH --error=bert_test_a100.err
-#SBATCH --time=02:30:00
-#SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=32
-#SBATCH --mem=32G
+#SBATCH --output=bert_test_cpu.out
+#SBATCH --error=bert_test_cpu.err
+#SBATCH --time=24:00:00
+#SBATCH --cpus-per-task=64
+#SBATCH --mem=64G
 #SBATCH --ntasks=1
+#SBATCH --exclusive
+##SBATCH --gres=gpu:1
 
 source ./.env
 module load cesga/2025

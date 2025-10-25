@@ -3,3 +3,4 @@ venv
 bert_squad_model
 ./runs
 PROFILING_EXPLANATION.odt
+/runs
