@@ -29,13 +29,13 @@ TRAINING_PROFILING_RUNS = {
     "With profiler": {
         "profiler": torch.profiler.profile(
             activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
-            schedule=torch.profiler.schedule(wait=2, warmup=2, active=10, repeat=1),
+            schedule=torch.profiler.schedule(wait=2, warmup=100, active=10, repeat=1),
             on_trace_ready=torch.profiler.tensorboard_trace_handler("./runs/profile/"),
             record_shapes=True,
             profile_memory=True,
             with_stack=True,
         ),
-        "save_profiler_time_table": False,
+        "save_profiler_time_table": True,
         "save_tensorboard_metrics": False,
         "save_model": False,
     },
@@ -46,7 +46,6 @@ TRAINING_PROFILING_RUNS = {
         "save_model": True,
     },
 }
-
 
 writer = SummaryWriter()
 
