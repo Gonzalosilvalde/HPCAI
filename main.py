@@ -257,14 +257,11 @@ class SQuADTrainer:
             total_train_time = time.time() - start_time
 
             if save_tensorboard_metrics:
-                metrics = {
-                    "total_time_s": total_train_time,
-                    "final_loss": avg_epoch_loss,
-                    "batch_size": self.batch_size,
-                    "num_epochs": self.num_epochs,
-                }
+                writer.add_text("total_time_s", f"{total_train_time}")
+                writer.add_text("final_loss", f"{avg_epoch_loss}")
+                writer.add_text("batch_size", f"{self.batch_size}")
+                writer.add_text("num_epochs", f"{self.num_epochs}")
 
-                writer.add_text("Summary", metrics)
                 writer.flush()
 
             if save_profiler_time_table and profiler != None:
