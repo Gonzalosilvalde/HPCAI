@@ -6,5 +6,7 @@ PROFILING_EXPLANATION.odt
 /runs
 .~lock.PROFILING_EXPLANATION.odt#
 
-c208-11_1251591.1761414801565315520.pt.trace.json
-arch_32510.1761414540803082147.pt.trace.json
+*.json
+*.0
+*.O
+*.safetensors
