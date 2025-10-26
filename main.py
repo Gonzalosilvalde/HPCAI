@@ -22,7 +22,7 @@ CONFIG = {
     "model_name": "bert-base-uncased",
     "max_length": 384,
     "batch_size": 8,
-    "num_epochs": 10,
+    "num_epochs": 1,
 }
 
 
@@ -34,22 +34,21 @@ TRAINING_PROFILING_RUNS = {
     "With profiler": {
         "profiler": torch.profiler.profile(
             activities=activities,
-            schedule=torch.profiler.schedule(wait=2, warmup=100, active=10, repeat=1),
+            schedule=torch.profiler.schedule(wait=2, warmup=100, active=8, repeat=1),
             on_trace_ready=torch.profiler.tensorboard_trace_handler("./runs/profile/"),
             record_shapes=True,
             profile_memory=True,
             with_stack=True,
         ),
         "save_profiler_time_table": True,
-        "save_tensorboard_metrics": False,
-        "save_model": False,
-    },
-    "No profiler": {
-        "profiler": None,
-        "save_profiler_time_table": False,
         "save_tensorboard_metrics": True,
         "save_model": True,
     },
+    # "No profiler": {
+    #     "profiler": None,
+    #     "save_tensorboard_metrics": True,
+    #     "save_model": True,
+    # },
 }
 
 writer = SummaryWriter()
