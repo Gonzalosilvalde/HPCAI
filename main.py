@@ -22,7 +22,7 @@ CONFIG = {
     "model_name": "bert-base-uncased",
     "max_length": 384,
     "batch_size": 8,
-    "num_epochs": 1,
+    "num_epochs": 5,
 }
 
 
