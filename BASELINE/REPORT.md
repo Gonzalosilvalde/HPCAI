@@ -47,6 +47,7 @@ Loss final: 0.14979120969766097
 
 ### Intel Xeon Ice Lake 8352Y CPU (with 64 threads)
 Tiempo total (5 epochs): 18742s (~312 minutos)
+Loss final: 
 
 Se puede observar un gran cambio de rendimiento entre ejecución en GPU frente a ejecución en CPU, como es de esperar.
 Respecto a las diferencias entre las ejecuciones de GPU, se puede observar un rendimiento notablemente superior en la A100 y RTX5070 frente a la Tesla T4. Este rendimiento es lógico considerando la capacidad de procesamiento y núcleos Cuda de cada GPU.
@@ -93,4 +94,3 @@ Se muestran a continuación las imágenes de las métricas escalares guardadas p
 Además se han guarado datos sobre datos sobre el tiempo total de ejecución, epochs, loss final y batch size visualizables mediante tensorboard:
 
 ![Visualización por tensorboard 2](./images/tiempos_tensorboard.png)
-
