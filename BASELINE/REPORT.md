@@ -1,5 +1,9 @@
 # BASELINE (Gonzalo Silvade and Unai Iborra)
 
+Intro:
+Se han utilizado los métodos proporcionados por pytorch para profiling. Gracias a ello se ha logrado observar los tiempos y recursos tomados por los entrenamientos. Adicionalmente, se ha implementado la visualización de métricas del entrenamiento mediante tensorboard.
+
+
 ## Profiling y visualización de métricas con tensorboard
 Para realizar el profiling del entrenamiento se ha utilizado la clase torch.profiler.profile(). Ésta permite analizar con detalle las llamadas a función y etapas del modelo, uso de CPU, GPU, memoria, etc.
 
