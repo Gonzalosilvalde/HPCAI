@@ -1,6 +1,6 @@
 # BASELINE (Gonzalo Silvade and Unai Iborra)
 
-## Profiling
+## Profiling y visualización de métricas con tensorboard
 Para realizar el profiling del entrenamiento se ha utilizado la clase torch.profiler.profile(). Ésta permite analizar con detalle las llamadas a función y etapas del modelo, uso de CPU, GPU, memoria, etc.
 
 Se han definido los siguientes tres parámetros para facilitar la configuración del profiling en el método train():
@@ -31,7 +31,7 @@ El modelo ha sido entrenado en diferentes hardwares con la finalidad de observar
     3. Nvidia RTX5070 GPU
     4. Intel Xeon Ice Lake 8352Y CPU (with 64 threads)
 
-Los resultados de dichos entrenamientos han sido los siguientes para un entrenamiento de 5 epochs:
+Los resultados de dichos entrenamientos han sido los siguientes para un entrenamiento de 5 epochs (1268 steps por epoch, 6340 steps totales):
 
 ### Nvidia A100 GPU
 Tiempo total (5 epochs): 826s (~14 minutos)
@@ -42,14 +42,16 @@ Tiempo total (5 epochs): 3520s (~59 minutos)
 Loss final: 0.12958095948443576
 
 ### Nvidia RTX5070 GPU
-812s (~14 minutos)
+Tiempo total (5 epochs): 812s (~14 minutos)
 Loss final: 0.14979120969766097
 
 ### Intel Xeon Ice Lake 8352Y CPU (with 64 threads)
+Tiempo total (5 epochs): 18742s (~312 minutos)
 
 Se puede observar un gran cambio de rendimiento entre ejecución en GPU frente a ejecución en CPU, como es de esperar.
 Respecto a las diferencias entre las ejecuciones de GPU, se puede observar un rendimiento notablemente superior en la A100 y RTX5070 frente a la Tesla T4. Este rendimiento es lógico considerando la capacidad de procesamiento y núcleos Cuda de cada GPU.
 
+Se concluye que el speedup con las gráficas A100 y RTX5070 es de aproximadamente 23 frente a la ejecución en CPU y de aproximadamente 4 frente a la Tesla T4.
 
 ### Perfetto
 Respecto al profiling de los entrenamientos, se han visualizado los resultados del profiling mediante la web perfetto. En la siguiente imágen se puede observar la vista global de las distintas etapas del entrenamiento en un dashboard global (A100):
@@ -86,3 +88,9 @@ Los resultados de los entrenamientos de cada gpu en este formato tabla se pueden
 
 ### Visualización de métricas escalares mediante tensorboard
 Se muestran a continuación las imágenes de las métricas escalares guardadas para visualizar con tensorboard.
+![Visualización por tensorboard](./images/tensorboard.png)
+
+Además se han guarado datos sobre datos sobre el tiempo total de ejecución, epochs, loss final y batch size visualizables mediante tensorboard:
+
+![Visualización por tensorboard 2](./images/tiempos_tensorboard.png)
+
