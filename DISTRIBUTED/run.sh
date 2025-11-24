@@ -4,8 +4,8 @@
 #SBATCH --error=bert_test_a100.err
 #SBATCH --time=01:00:00
 #SBATCH --gres=gpu:2
-#SBATCH --cpus-per-task=32
-#SBATCH --mem=32G
+#SBATCH --cpus-per-task=64
+#SBATCH --mem=64G
 #SBATCH --ntasks=1
 
 source ./.env
