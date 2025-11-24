@@ -6,7 +6,7 @@ from typing import Dict, Any
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.profilers import PyTorchProfiler
+from pytorch_lightning.profilers import AdvancedProfiler
 
 from torch.utils.data import DataLoader
 from transformers import (
@@ -34,7 +34,7 @@ NUM_GPUS = 2
 
 class SQuADDataModule(pl.LightningDataModule):
     """DataModule para manejar la carga y preprocesamiento de datos"""
-    
+
     def __init__(
         self,
         tokenizer: BertTokenizerFast,
@@ -114,28 +114,28 @@ class SQuADDataModule(pl.LightningDataModule):
             if self.trainer.is_global_zero:
                 print(f"\n[GPU 0] Loading and caching SQuAD dataset...")
                 load_dataset("squad", split="train")
-            
+
             # sincronizar
-            if hasattr(self.trainer.strategy, 'barrier'):
+            if hasattr(self.trainer.strategy, "barrier"):
                 self.trainer.strategy.barrier()
-            
+
             # carga en cache
             rank = self.trainer.global_rank
             print(f"[GPU {rank}] Loading dataset from cache...")
-            
+
             dataset = load_dataset("squad", split="train")
             dataset = dataset.select(range(min(self.subset_size, len(dataset))))
 
             if rank == 0:
                 print(f"[GPU 0] Preprocessing {len(dataset)} examples...")
-            
+
             self.train_dataset = dataset.map(
                 self.preprocess_function,
                 batched=True,
                 remove_columns=dataset.column_names,
             )
             self.train_dataset.set_format("torch")
-            
+
             if rank == 0:
                 print(f"[GPU 0] Dataset ready: {len(self.train_dataset)} samples")
 
@@ -152,7 +152,7 @@ class SQuADDataModule(pl.LightningDataModule):
 
 class BERTSQuADModule(pl.LightningModule):
     """LightningModule que encapsula el modelo BERT para Q&A"""
-    
+
     def __init__(
         self,
         model_name: str = "bert-base-uncased",
@@ -161,7 +161,7 @@ class BERTSQuADModule(pl.LightningModule):
     ):
         super().__init__()
         self.save_hyperparameters()
-        
+
         self.model = BertForQuestionAnswering.from_pretrained(model_name)
         self.learning_rate = learning_rate
         self.num_warmup_steps = num_warmup_steps
@@ -172,24 +172,33 @@ class BERTSQuADModule(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         outputs = self(**batch)
         loss = outputs.loss
-        
-        self.log("train_loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
-        self.log("lr", self.optimizers().param_groups[0]['lr'], on_step=True, prog_bar=True)
-        
+
+        self.log(
+            "train_loss",
+            loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+            sync_dist=True,
+        )
+        self.log(
+            "lr", self.optimizers().param_groups[0]["lr"], on_step=True, prog_bar=True
+        )
+
         return loss
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate)
-        
+
         # calcular training steps
         num_training_steps = self.trainer.estimated_stepping_batches
-        
+
         scheduler = get_linear_schedule_with_warmup(
             optimizer,
             num_warmup_steps=self.num_warmup_steps,
             num_training_steps=num_training_steps,
         )
-        
+
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
@@ -206,7 +215,7 @@ def train_with_lightning(
     num_gpus: int = 2,
     use_profiler: bool = False,
 ):
-    
+
     print(f"\n{'='*70}")
     print(f"PYTORCH LIGHTNING DISTRIBUTED TRAINING")
     print(f"{'='*70}")
@@ -262,18 +271,9 @@ def train_with_lightning(
 
     profiler = None
     if use_profiler:
-        profiler = PyTorchProfiler(
+        profiler = AdvancedProfiler(
             dirpath="./profiler_logs",
-            filename="profile_2gpu",
-            activities=[
-                torch.profiler.ProfilerActivity.CPU,
-                torch.profiler.ProfilerActivity.CUDA,
-            ],
-            schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
-            on_trace_ready=torch.profiler.tensorboard_trace_handler("./profiler_logs"),
-            record_shapes=True,
-            profile_memory=True,
-            with_stack=True,
+            filename="profile_2gpu.txt",
         )
 
     trainer = pl.Trainer(
@@ -294,7 +294,7 @@ def train_with_lightning(
     print(f"\n{'='*70}")
     print(f"STARTING TRAINING")
     print(f"{'='*70}\n")
-    
+
     start_time = time.time()
     trainer.fit(model, data_module)
     total_time = time.time() - start_time
@@ -312,20 +312,20 @@ def train_with_lightning(
 
 
 def compare_strategies():
-    
+
     strategies = [
         ("ddp", "DDP - DistributedDataParallel (Recommended)"),
         # ("ddp_spawn", "DDP Spawn - Alternative DDP"),
         # ("fsdp", "FSDP - Fully Sharded Data Parallel"),
     ]
-    
+
     results = {}
-    
+
     for strategy, description in strategies:
         print(f"\n{'#'*70}")
         print(f"# Testing: {description}")
         print(f"{'#'*70}\n")
-        
+
         try:
             model, trainer, total_time = train_with_lightning(
                 config=CONFIG,
@@ -335,7 +335,7 @@ def compare_strategies():
             )
             results[strategy] = {
                 "time": total_time,
-                "final_loss": trainer.callback_metrics.get('train_loss', None),
+                "final_loss": trainer.callback_metrics.get("train_loss", None),
                 "success": True,
             }
         except Exception as e:
@@ -346,13 +346,15 @@ def compare_strategies():
                 "success": False,
                 "error": str(e),
             }
-    
+
     print(f"\n{'='*70}")
     print(f"COMPARISON SUMMARY")
     print(f"{'='*70}")
     for strategy, result in results.items():
         if result["success"]:
-            print(f"{strategy:15} | Time: {result['time']:.2f}s | Loss: {result['final_loss']:.4f}")
+            print(
+                f"{strategy:15} | Time: {result['time']:.2f}s | Loss: {result['final_loss']:.4f}"
+            )
         else:
             print(f"{strategy:15} | FAILED: {result['error']}")
     print(f"{'='*70}\n")
@@ -365,7 +367,6 @@ def main():
         num_gpus=NUM_GPUS,
         use_profiler=True,
     )
-    
 
 
 if __name__ == "__main__":
