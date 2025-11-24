@@ -6,7 +6,9 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=32G
-#SBATCH --ntasks=1
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=2
+
 
 source ./.env
 module load cesga/2025
