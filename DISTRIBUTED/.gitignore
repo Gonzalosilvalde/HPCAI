@@ -1,0 +1,12 @@
+venv
+.env
+bert_squad_model
+./runs
+PROFILING_EXPLANATION.odt
+/runs
+.~lock.PROFILING_EXPLANATION.odt#
+
+*.json
+*.0
+*.O
+*.safetensors
