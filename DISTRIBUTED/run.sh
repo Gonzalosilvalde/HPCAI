@@ -3,10 +3,10 @@
 #SBATCH --output=bert_test_a100.out
 #SBATCH --error=bert_test_a100.err
 #SBATCH --time=02:30:00
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=32G
-#SBATCH --ntasks=1
+#SBATCH --ntasks=2
 
 source ./.env
 module load cesga/2025
