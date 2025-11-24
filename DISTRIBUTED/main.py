@@ -30,6 +30,7 @@ CONFIG = {
 
 STRATEGY = "ddp"
 NUM_GPUS = 2
+NUM_NODES = 2
 
 
 class SQuADDataModule(pl.LightningDataModule):
@@ -289,6 +290,7 @@ def train_with_lightning(
         precision="16-mixed" if torch.cuda.is_available() else 32,
         gradient_clip_val=1.0,
         deterministic=False,
+        num_nodes=NUM_NODES,
     )
 
     print(f"\n{'='*70}")
@@ -306,7 +308,7 @@ def train_with_lightning(
     print(f"Average time per epoch: {total_time/config['num_epochs']:.2f}s")
     print(f"Final loss: {trainer.callback_metrics.get('train_loss', 'N/A')}")
     print(f"Best checkpoint: {checkpoint_callback.best_model_path}")
-    print(f"{'='*70}\n")
+    print(f"{'='*70}\n", flush=True)
 
     return model, trainer, total_time
 

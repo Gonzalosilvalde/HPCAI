@@ -1,12 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=bert_test
-#SBATCH --output=bert_test_a100.out
-#SBATCH --error=bert_test_a100.err
+#SBATCH --job-name=bert_test_distributed
+#SBATCH --output=bert_test_a100_distributed.out
+#SBATCH --error=bert_test_a100_distributed.err
 #SBATCH --time=01:00:00
 #SBATCH --gres=gpu:2
-#SBATCH --cpus-per-task=64
+#SBATCH --cpus-per-task=32
+#SBATCH --ntasks-per-node=8
 #SBATCH --mem=64G
-#SBATCH --ntasks=1
+#SBATCH --nodes=2
 
 source ./.env
 module load cesga/2025
@@ -18,4 +19,4 @@ mkdir runs
 mkdir runs/profile
 
 echo "Starting job..."
-python main.py
+srun python main.py
