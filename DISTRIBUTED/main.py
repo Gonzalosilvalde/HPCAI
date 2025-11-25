@@ -31,6 +31,7 @@ CONFIG = {
 STRATEGY = "ddp"
 NUM_GPUS = 2
 NUM_NODES = 2
+USE_PROFILER = False
 
 
 class SQuADDataModule(pl.LightningDataModule):
@@ -368,7 +369,7 @@ def main():
         config=CONFIG,
         strategy="ddp",
         num_gpus=NUM_GPUS,
-        use_profiler=True,
+        use_profiler=USE_PROFILER,
     )
 
 
