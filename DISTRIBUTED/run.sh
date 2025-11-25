@@ -5,8 +5,8 @@
 #SBATCH --time=01:00:00
 #SBATCH --gres=gpu:2
 #SBATCH --cpus-per-task=32
-#SBATCH --ntasks-per-node=8
-#SBATCH --mem=64G
+#SBATCH --ntasks-per-node=2
+#SBATCH --mem=32G
 #SBATCH --nodes=2
 
 source ./.env
