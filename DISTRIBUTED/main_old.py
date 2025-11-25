@@ -19,7 +19,7 @@ from datasets import load_dataset
 CONFIG = {
     "model_name": "bert-base-uncased",
     "max_length": 384,
-    "batch_size": 16,  # Por GPU
+    "batch_size": 8,  # Por GPU
     "num_epochs": 5,
     "learning_rate": 3e-5,
     "num_warmup_steps": 500,
@@ -147,7 +147,7 @@ class SQuADDataModule(pl.LightningDataModule):
             shuffle=True,
             num_workers=self.num_workers,
             pin_memory=True if torch.cuda.is_available() else False,
-            persistent_workers=False,
+            persistent_workers=True if self.num_workers > 0 else False,
         )
 
 
@@ -258,8 +258,7 @@ def train_with_lightning(
     checkpoint_callback = ModelCheckpoint(
         dirpath="./checkpoints",
         filename="bert-squad-{epoch:02d}-{train_loss:.2f}",
-        save_top_k=1,
-        every_n_epochs=5,
+        save_top_k=3,
         monitor="train_loss",
         mode="min",
         save_last=True,
