@@ -367,7 +367,7 @@ def compare_strategies():
 def main():
     train_with_lightning(
         config=CONFIG,
-        strategy="ddp",
+        strategy=STRATEGY,
         num_gpus=NUM_GPUS,
         use_profiler=USE_PROFILER,
     )

@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks-per-node=2
 #SBATCH --mem=32G
-#SBATCH --N 2
+#SBATCH -N 2
 
 source ./.env
 module load cesga/2025
